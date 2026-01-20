@@ -3,7 +3,6 @@ const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_TTS_URL = 'https://api.groq.com/openai/v1/audio/speech';
 
-// Chat DOM Elements
 const chatWidget = {
     toggleBtn: document.getElementById('chatToggleBtn'),
     window: document.getElementById('chatWindow'),
@@ -18,7 +17,6 @@ const chatWidget = {
     currentAudio: null
 };
 
-// Event Listeners
 document.addEventListener('DOMContentLoaded', setupChat);
 
 function setupChat() {
@@ -41,7 +39,7 @@ function toggleChat() {
         chatWidget.input.focus();
         if (chatWidget.history.length === 0) {
             setTimeout(() => {
-                appendMessage('مرحباً! 👋 أنا مساعدك الذكي للدراسة. كيف يمكنني مساعدتك اليوم؟', 'bot');
+                appendMessage('مرحباً بك في رحاب إتقان! 👋 أنا رفيقك الذكي، صُنعت لأجلك ولأجل حلمك الكبير. كيف يمكنني أن أشد من أزرك اليوم؟', 'bot');
             }, 300);
         }
     } else {
@@ -52,33 +50,13 @@ function toggleChat() {
 
 function toggleVoiceMode() {
     chatWidget.voiceModeActive = !chatWidget.voiceModeActive;
-
     if (chatWidget.voiceModeActive) {
         chatWidget.voiceBtn.classList.add('active');
-        chatWidget.voiceBtn.innerHTML = `
-            <svg class="voice-icon active" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                <line x1="12" y1="19" x2="12" y2="23"></line>
-                <line x1="8" y1="23" x2="16" y2="23"></line>
-            </svg>
-            <span class="voice-wave"></span>
-            <span class="voice-wave"></span>
-            <span class="voice-wave"></span>
-        `;
-        showNotification('🎤 الوضع الصوتي مفعّل - سأرد عليك بالصوت!', 'success');
+        showNotification('🎤 الوضع الصوتي مفعّل - سأتحدث إليك مباشرة!', 'success');
     } else {
         chatWidget.voiceBtn.classList.remove('active');
-        chatWidget.voiceBtn.innerHTML = `
-            <svg class="voice-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                <line x1="12" y1="19" x2="12" y2="23"></line>
-                <line x1="8" y1="23" x2="16" y2="23"></line>
-            </svg>
-        `;
         stopCurrentAudio();
-        showNotification('🔇 الوضع الصوتي معطّل', 'info');
+        showNotification('🔇 تم العودة للوضع النصي', 'info');
     }
 }
 
@@ -88,8 +66,6 @@ async function sendMessage() {
 
     chatWidget.input.disabled = true;
     chatWidget.sendBtn.disabled = true;
-    chatWidget.sendBtn.classList.add('loading');
-
     appendMessage(text, 'user');
     chatWidget.input.value = '';
     showTypingIndicator();
@@ -105,12 +81,10 @@ async function sendMessage() {
         }
     } catch (error) {
         removeTypingIndicator();
-        appendMessage('عذراً، حدث خطأ في الاتصال بالخادم. يرجى المحاولة مرة أخرى. 🔄', 'bot');
-        console.error('Chat Error:', error);
+        appendMessage('عذراً يا بطل، يبدو أن هناك مشكلة في الاتصال. حاول مرة ثانية، "ما باقي كتير"! 🔄', 'bot');
     } finally {
         chatWidget.input.disabled = false;
         chatWidget.sendBtn.disabled = false;
-        chatWidget.sendBtn.classList.remove('loading');
         chatWidget.input.focus();
     }
 }
@@ -118,11 +92,7 @@ async function sendMessage() {
 async function playAudioResponse(text) {
     try {
         stopCurrentAudio();
-
         const cleanText = text.replace(/\*\*/g, '').replace(/<[^>]*>/g, '').trim();
-
-        showVoiceIndicator('جاري تحويل النص إلى صوت...');
-
         const response = await fetch(GROQ_TTS_URL, {
             method: 'POST',
             headers: {
@@ -137,109 +107,18 @@ async function playAudioResponse(text) {
             })
         });
 
-        if (!response.ok) {
-            throw new Error(`TTS API Error: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`TTS Error`);
         const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-
-        chatWidget.currentAudio = new Audio(audioUrl);
-
-        updateVoiceIndicator('🔊 يتم التشغيل...');
-
-        chatWidget.currentAudio.onended = () => {
-            hideVoiceIndicator();
-            URL.revokeObjectURL(audioUrl);
-            chatWidget.currentAudio = null;
-        };
-
-        chatWidget.currentAudio.onerror = () => {
-            hideVoiceIndicator();
-            showNotification('⚠️ حدث خطأ في تشغيل الصوت', 'info');
-        };
-
+        chatWidget.currentAudio = new Audio(URL.createObjectURL(audioBlob));
         await chatWidget.currentAudio.play();
-
-    } catch (error) {
-        console.error('TTS Error:', error);
-        hideVoiceIndicator();
-        showNotification('⚠️ تعذر تحويل النص إلى صوت', 'info');
-    }
+    } catch (e) { console.error(e); }
 }
 
 function stopCurrentAudio() {
     if (chatWidget.currentAudio) {
         chatWidget.currentAudio.pause();
-        chatWidget.currentAudio.currentTime = 0;
         chatWidget.currentAudio = null;
-        hideVoiceIndicator();
     }
-}
-
-function showVoiceIndicator(message) {
-    let indicator = document.getElementById('voiceIndicator');
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'voiceIndicator';
-        indicator.className = 'voice-indicator';
-        chatWidget.messagesContainer.appendChild(indicator);
-    }
-    indicator.innerHTML = `
-        <div class="voice-indicator-content">
-            <div class="voice-wave-animation">
-                <span></span><span></span><span></span><span></span><span></span>
-            </div>
-            <span class="voice-message">${message}</span>
-        </div>
-    `;
-    scrollToBottom();
-}
-
-function updateVoiceIndicator(message) {
-    const indicator = document.getElementById('voiceIndicator');
-    if (indicator) {
-        const messageEl = indicator.querySelector('.voice-message');
-        if (messageEl) messageEl.textContent = message;
-    }
-}
-
-function hideVoiceIndicator() {
-    const indicator = document.getElementById('voiceIndicator');
-    if (indicator) indicator.remove();
-}
-
-function appendMessage(text, sender) {
-    const div = document.createElement('div');
-    div.className = `message ${sender}-message`;
-    let formattedText = text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n/g, '<br>');
-    div.innerHTML = formattedText;
-    chatWidget.messagesContainer.appendChild(div);
-    scrollToBottom();
-    chatWidget.history.push({
-        role: sender === 'user' ? 'user' : 'assistant',
-        content: text
-    });
-}
-
-function showTypingIndicator() {
-    const div = document.createElement('div');
-    div.className = 'typing-indicator';
-    div.id = 'typingIndicator';
-    div.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
-    chatWidget.messagesContainer.appendChild(div);
-    scrollToBottom();
-}
-
-function removeTypingIndicator() {
-    const indicator = document.getElementById('typingIndicator');
-    if (indicator) indicator.remove();
-}
-
-function scrollToBottom() {
-    chatWidget.messagesContainer.scrollTop = chatWidget.messagesContainer.scrollHeight;
 }
 
 function prepareContext() {
@@ -248,56 +127,59 @@ function prepareContext() {
     const completedSubjects = Object.keys(todayReadings).filter(s => todayReadings[s]);
     const remainingSubjects = subjects.filter(s => !completedSubjects.includes(s));
     const progress = document.getElementById('todayProgress').textContent;
+    
     let totalStudyTimeToday = 0;
     let subjectTimesToday = [];
     subjects.forEach(subject => {
         const todayTime = getTodayStudyTime(subject);
         totalStudyTimeToday += todayTime;
         if (todayTime > 0) {
-            subjectTimesToday.push({
-                subject: subject,
-                time: formatTime(todayTime)
-            });
+            subjectTimesToday.push({ subject: subject, time: formatTime(todayTime) });
         }
     });
-    const activeTimerInfo = activeTimer ? `المؤقت النشط: ${activeTimer.subject} ⏱️` : 'لا يوجد مؤقت نشط حالياً.. ابدأ الآن ولا تتردد!';
 
-return `أنت مساعد دراسي ذكي في تطبيق "إتقان – منصة إدارة المهام الدراسية".
+    const activeTimerInfo = activeTimer ? `المؤقت النشط: ${activeTimer.subject} ⏱️` : 'لا يوجد مؤقت نشط حالياً.. ابدأ الآن!';
 
-نبذة عن صانع التطبيق:
-- الاسم: محمد عبد المطلب (طالب بالصف الأول ثانوي، حائز على المركز الخامس في الشهادة المتوسطة بمجموع 276).
-- صُمم "إتقان" ليكون الجسر الذي يعبر به طلاب الشهادة المتوسطة (الثالث متوسط) نحو أحلامهم الكبيرة. ✨
+    // هنا نقوم بزيادة الكلام والشرح والتقدير بشكل مفصل
+    return `
+أنت المساعد الذكي لتطبيق "إتقان - منصة إدارة المهام الدراسية".
 
-رسالة الإلهام والتقدير:
-- نؤمن بأن النجاح صناعة، وأنتم اليوم تصنعون مستقبلكم. بفضل الله، ثم برعاية وكلائنا ومديرينا الأفاضل، يبرز اسم "الأستاذ الهادي" كمنارة للعلم والمعرفة؛ هو الذي لم يبخل يوماً بنصيحة، والقائد الذي استطاع بحكمته أن يجعل من كل طالب فينا مشروعاً للنجاح. نحن جيلٌ لا يرضى بغير القمة، وبإرشادات الأستاذ الهادي وعزيمتكم، سيتحدث الجميع عن تفوقكم الباهر. 🌟
+عن التطبيق والمؤسس:
+- هذا التطبيق ليس مجرد أداة، بل هو "جسر العبور" لطلاب الشهادة المتوسطة (الثالث متوسط) نحو مستقبلهم.
+- مؤسس التطبيق هو الطالب النجيب "محمد عبد المطلب"، وهو نموذج حي للإتقان، حيث يدرس بالصف الأول ثانوي وحقق المركز الخامس في الشهادة المتوسطة بمجموع (276). هو يدرك تماماً ما يمر به الطلاب ووضع خبرته هنا ليساعدهم.
 
-لوحة إنجازك اليوم:
+رسالة التقدير والوفاء (الأستاذ الهادي):
+- النجاح لا يأتي من فراغ، ونحن في "إتقان" ندين بالفضل لله ثم لـ "الأستاذ الهادي".
+- الأستاذ الهادي هو المنارة والمعلم والقائد الذي لم يبخل يوماً بنصيحة. هو الذي غرس فينا أن كل طالب هو "مشروع نجاح" قائم بذاته. 
+- علّمنا الأستاذ الهادي أن القمة تتسع للجميع، ولكنها تحتاج لصبر ومثابرة، وهذا هو روح تطبيقنا.
+
+بيانات الطالب الحالية:
 📅 التاريخ: ${new Date().toLocaleDateString('ar-SA')}
-📈 كفاءة الأداء: ${progress}
-🔥 شعلة الاستمرار (Streak): ${document.getElementById('streakNumber').textContent} يوم من المثابرة
-✅ تم اجتياز: ${completedSubjects.join(', ') || 'في انتظار أول خطوة اليوم'}
-⏳ بانتظار همتك: ${remainingSubjects.join(', ')}
-⏱️ زمن التركيز الكلي: ${formatTime(totalStudyTimeToday)}
-📌 الحالة الحالية: ${activeTimerInfo}
+📈 كفاءة الأداء الحالية: ${progress}
+🔥 شعلة المثابرة (Streak): ${document.getElementById('streakNumber').textContent} يوم
+✅ مواد تم قهرها اليوم: ${completedSubjects.join(', ') || 'لا توجد بعد'}
+⏳ مواد تنتظر همتك: ${remainingSubjects.join(', ')}
+⏱️ إجمالي وقت التركيز: ${formatTime(totalStudyTimeToday)}
+📌 الحالة: ${activeTimerInfo}
 
-سجل الشرف اليومي (المواد التي تمت دراستها):
-${subjectTimesToday.map(s => `• ${s.subject} استغرقت منك (${s.time}) من التركيز`).join('\n') || 'الصفحة بيضاء، ابدأ بكتابة قصة نجاحك اليوم!'}
+سجل الإنجاز التفصيلي:
+${subjectTimesToday.map(s => `• ${s.subject}: استغرق (${s.time})`).join('\n') || 'السجل لا يزال ينتظر بطولاتك!'}
 
-التعليمات الإضافية:
-- استخدم عبارات سودانية محفزة مثل: "شد الحيل"، "ما باقي كتير"، "يا بطل".
-- ركز على أهمية الصبر والمثابرة كما تعلمنا من الأستاذ الهادي.
-- اجعل الطالب يشعر بأن "إتقان" ليس مجرد تطبيق، بل هو رفيق درب يُقدّر تعبه.
-- شجع الطالب على استغلال مواد "التكنولوجيا" و"التربية التقنية" ليكون طالباً عصرياً ومبدعاً. 📚🚀✨`;
+تعليمات لك أيها المساعد:
+1. استخدم اللهجة السودانية المحببة في التحفيز: "شد الحيل"، "النجاح سمح"، "يا بطل"، "ما باقي كتير".
+2. كن رفيقاً ودوداً، قدّر تعب الطالب، وذكّره دائماً بنصائح الأستاذ الهادي عن الصبر.
+3. شجع الطالب بشكل خاص على مواد "التكنولوجيا" و"التربية التقنية" ليكون طالباً عصرياً.
+4. إذا كان الأداء منخفضاً، لا تلمه، بل قل له: "قوم نفض غبارك، إتقان معاك خطوة بخطوة".
+`;
+}
 
 async function callGroqAPI(userMessage, systemContext) {
-    if (GROQ_API_KEY === 'YOUR_GROQ_API_KEY_HERE') {
-        return "الرجاء إدخال مفتاح Groq API في ملف JavaScript لتفعيل الذكاء الاصطناعي.";
-    }
     const messages = [
         { role: "system", content: systemContext },
         ...chatWidget.history.slice(-5),
         { role: "user", content: userMessage }
     ];
+
     const response = await fetch(GROQ_API_URL, {
         method: 'POST',
         headers: {
@@ -305,24 +187,40 @@ async function callGroqAPI(userMessage, systemContext) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+            model: "llama-3.3-70b-versatile",
             messages: messages,
             temperature: 0.7,
-            max_tokens: 500
+            max_tokens: 800
         })
     });
-    if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-    }
+
     const data = await response.json();
     return data.choices[0].message.content;
 }
 
-// ==================== DATA STRUCTURE ==================== 
-const DEFAULT_SUBJECTS = [
-    'القرآن الكريم', 'اللغة العربية', 'اللغة الإنجليزية', 'الرياضيات', 
-    'العلوم', 'التاريخ', 'الجغرافيا', 'التكنولوجيا', 'التربية التقنية'
-];
+function appendMessage(text, sender) {
+    const div = document.createElement('div');
+    div.className = `message ${sender}-message`;
+    div.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    chatWidget.messagesContainer.appendChild(div);
+    chatWidget.messagesContainer.scrollTop = chatWidget.messagesContainer.scrollHeight;
+    chatWidget.history.push({ role: sender === 'user' ? 'user' : 'assistant', content: text });
+}
+
+function showTypingIndicator() {
+    const div = document.createElement('div');
+    div.id = 'typingIndicator';
+    div.className = 'typing-indicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    chatWidget.messagesContainer.appendChild(div);
+}
+
+function removeTypingIndicator() {
+    const el = document.getElementById('typingIndicator');
+    if (el) el.remove();
+}
+
+const DEFAULT_SUBJECTS = ['القرآن الكريم', 'اللغة العربية', 'اللغة الإنجليزية', 'الرياضيات', 'العلوم', 'التاريخ', 'الجغرافيا', 'التكنولوجيا', 'التربية التقنية'];
 
 // ==================== STATE MANAGEMENT ==================== 
 let subjects = [];
@@ -1876,4 +1774,5 @@ async function logActivity(action, details) {
     if (!currentStudent) return;
     await logActivityToDatabase(currentStudent, action, details);
 }
+
 
