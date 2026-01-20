@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتقان | لوحة التحكم</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css"> <!-- New Premium Styles -->
+</head>
+
+<body>
+
+    <!-- Admin Login -->
+    <div id="adminLogin" class="login-overlay">
+        <div class="login-box">
+            <h2>🔐 بوابة المشرف</h2>
+            <p style="color: #94a3b8; margin-bottom: 25px;">الرجاء إدخال رمز المرور للمتابعة</p>
+            <input type="password" id="adminPassInput" placeholder="••••••••" autocomplete="off">
+            <button onclick="checkAdminPass()" class="btn-ai" style="width: 100%; justify-content: center;">تسجيل
+                الدخول</button>
+        </div>
+    </div>
+
+    <div id="adminContent" class="admin-container hidden">
+        <header class="admin-header">
+            <div class="admin-title">
+                <h1>لوحة القيادة المركزية</h1>
+                <p>إدارة نشاط الطلاب وتحليل البيانات</p>
+            </div>
+            <button class="btn-ai" onclick="analyzeData()">
+                <span>🤖</span> تحليل الذكاء الاصطناعي
+            </button>
+        </header>
+
+        <div class="admin-grid">
+            <div class="main-col">
+                <div class="data-card">
+                    <div class="card-header">
+                        <h2>📊 سجل النشاطات الحية</h2>
+                        <button onclick="clearLogs()"
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;">
+                            تفريغ السجل 🗑️
+                        </button>
+                    </div>
+                    <div class="log-table-container">
+                        <table class="log-table">
+                            <thead>
+                                <tr>
+                                    <th>الطالب</th>
+                                    <th>النشاط</th>
+                                    <th>التفاصيل</th>
+                                    <th>التوقيت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <!-- Logs injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="data-card hidden" id="aiAnalysisCard" style="margin-top: 30px;">
+                    <div class="card-header">
+                        <h2>🤖 تقرير الذكاء الاصطناعي</h2>
+                    </div>
+                    <div id="aiResultContent" class="ai-result">
+                        <!-- AI analysis result -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-col">
+                <div class="data-card">
+                    <div class="card-header">
+                        <h2>👥 الطلاب النشطين</h2>
+                    </div>
+                    <div id="studentsList">
+                        <!-- Students list -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Profile Section (Replaces Modal) -->
+    <div id="studentProfileSection" class="hidden">
+        <div class="profile-header">
+            <button onclick="closeStudentProfile()" class="btn-back">
+                ➡️ العودة للوحة التحكم
+            </button>
+            <div class="profile-title-row">
+                <div class="profile-avatar-large" id="profileAvatar">A</div>
+                <div>
+                    <h2 id="profileName">اسم الطالب</h2>
+                    <p style="color: #94a3b8;">تقرير شامل للأداء الأكاديمي</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-stats-row">
+            <div class="stat-box">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="profileStreak">0</div>
+                    <div class="stat-label">أيام متتالية</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="profileTotalTime">0</div>
+                    <div class="stat-label">ساعات المذاكرة</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="profileCompletion">0%</div>
+                    <div class="stat-label">نسبة الإنجاز اليوم</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-content-grid">
+            <div class="profile-main-col">
+                <h3 class="section-title">📚 المواد الدراسية</h3>
+                <div class="details-table-container">
+                    <table class="details-table" id="profileTable">
+                        <thead>
+                            <tr>
+                                <th>المادة</th>
+                                <th>الحالة اليوم</th>
+                                <th>إجمالي الوقت</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profileTableBody">
+                            <!-- Rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="profile-side-col">
+                <h3 class="section-title">📊 آخر النشاطات</h3>
+                <div class="activity-timeline" id="profileTimeline">
+                    <!-- Activity items injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+
+    <!-- Firebase Helper Functions -->
+    <script src="firebase-helpers.js"></script>
+
+    <!-- Admin Script-->
+    <script src="admin.js"></script>
+</body>
+
+</html>

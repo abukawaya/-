@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<script>
+    const pass = localStorage.getItem("site-pass");
+    if (pass !== "true") {
+        window.location.href = "password.html";
+    }
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>إتقان | منصة إدارة المهام الدراسية</title>
+
+    <meta name="description"
+        content="إتقان هو تطبيق ذكي لإدارة القراءة اليومية والمهام الدراسية، مع خطط وجداول دراسة وتحليل الأداء بالذكاء الاصطناعي. بصمة الطالب: محمد عبد المطلب">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+
+    <link rel="icon" type="image/png" href="logo-11.png">
+    <link rel="shortcut icon" type="image/png" href="logo-11.png">
+</head>
+
+<body>
+    <!-- Background Animation -->
+    <div class="bg-animation"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="title-container">
+                    <div class="logo-wrapper">
+                        <img src="logo-11.png" alt="إتقان" class="app-logo">
+                        <div class="logo-glow"></div>
+                    </div>
+                    <div class="title-text">
+                        <h1 class="app-title">
+                            إتقان
+                            <span class="title-subtitle">نحو دراسة أذكى</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="current-date" id="currentDate"></div>
+            </div>
+            <div class="streak-container">
+                <div class="streak-badge" id="streakBadge">
+                    <span class="streak-icon">🔥</span>
+                    <span class="streak-number" id="streakNumber">0</span>
+                    <span class="streak-label">يوم متتالي</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Dashboard -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📖</div>
+                <div class="stat-value" id="todayProgress">0%</div>
+                <div class="stat-label">التقدم اليومي</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value" id="weeklyProgress">0%</div>
+                <div class="stat-label">التقدم الأسبوعي</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value" id="totalReadings">0</div>
+                <div class="stat-label">إجمالي القراءات</div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <div class="main-grid">
+            <!-- Subjects Section -->
+            <section class="subjects-section">
+                <div class="section-header">
+                    <h2>📚 المواد الدراسية</h2>
+                    <button class="btn-add" id="btnAddSubject">
+                        <span>+</span> إضافة مادة
+                    </button>
+                </div>
+
+
+                <!-- Add Subject Form -->
+                <div class="add-subject-form hidden" id="addSubjectForm">
+                    <input type="text" id="newSubjectInput" placeholder="اسم المادة الجديدة" class="input-field">
+                    <div class="form-buttons">
+                        <button class="btn-primary" id="btnSaveSubject">حفظ</button>
+                        <button class="btn-secondary" id="btnCancelSubject">إلغاء</button>
+                    </div>
+                </div>
+
+                <!-- Subjects List -->
+                <div class="subjects-list" id="subjectsList"></div>
+            </section>
+
+            <!-- AI Analysis Section -->
+            <section class="ai-section">
+                <div class="section-header">
+                    <h2>🤖 تحليل الذكاء الاصطناعي</h2>
+                    <button class="btn-refresh" id="btnRefreshAI">
+                        <span class="refresh-icon">↻</span>
+                    </button>
+                </div>
+                <div class="ai-content" id="aiContent">
+                    <div class="ai-loading">
+                        <div class="spinner"></div>
+                        <p>جاري تحليل أدائك...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-header">
+                <span>التقدم اليومي</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Weekly Review Button -->
+        <button class="btn-weekly-review" id="btnWeeklyReview">
+            <span class="icon">📊</span>
+            المراجعة الأسبوعية
+        </button>
+    </div>
+
+    <!-- Weekly Review Modal -->
+    <div class="modal hidden" id="weeklyModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <h2 class="modal-title">📊 المراجعة الأسبوعية</h2>
+
+            <div class="motivational-message" id="motivationalMessage"></div>
+
+            <div class="weekly-stats-grid" id="weeklyStats">
+                <!-- Stats will be injected here -->
+            </div>
+
+            <div class="weekly-chart" id="weeklyChart">
+                <!-- Chart will be injected here -->
+            </div>
+
+            <button class="btn-primary btn-large" id="btnCloseModal">
+                رائع! لنواصل التقدم 💪
+            </button>
+        </div>
+    </div>
+    <div class="chat-widget">
+        <button class="chat-toggle-btn" id="chatToggleBtn">
+            <span class="icon">🤖</span>
+        </button>
+
+        <div class="chat-window hidden" id="chatWindow">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <span class="icon">🧠</span>
+                    <div>
+                        <h3>المساعد الذكي</h3>
+                        <span class="status">متصل الان</span>
+                    </div>
+                </div>
+                <button class="chat-close" id="chatCloseBtn">×</button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    مرحباً! أنا مساعدك الدراسي الذكي. يمكنني تحليل أدائك ومساعدتك في تنظيم وقتك. كيف يمكنني مساعدتك
+                    اليوم؟
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." autocomplete="off">
+                <button id="chatSendBtn">
+                    <span>➤</span>
+                </button>
+                <button id="chatVoiceBtn" class="chat-voice-btn" title="تفعيل/تعطيل الرد الصوتي">
+                    <svg class="voice-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- Student Login Modal -->
+    <div class="modal hidden" id="studentLoginModal" style="z-index: 10000;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-icon">👋</div>
+            <h2 class="modal-title">مرحباً بك يا بطل!</h2>
+            <p style="color: #ccc; margin-bottom: 20px;">الرجاء كتابة اسمك لنبدأ رحلة التفوق</p>
+            <input type="text" id="studentNameInput" placeholder="اكتب اسمك هنا..." class="input-field"
+                style="text-align: center; font-size: 1.2em;">
+            <button class="btn-primary btn-large" id="btnSaveStudentName" style="margin-top: 20px; width: 100%;">
+                انطلق 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+
+    <!-- Firebase Helper Functions -->
+    <script src="firebase-helpers.js"></script>
+
+    <!-- Main App Script -->
+    <script src="app.js"></script>
+</body>
+
+
+</html>
