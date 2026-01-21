@@ -127,7 +127,7 @@ function prepareContext() {
     const completedSubjects = Object.keys(todayReadings).filter(s => todayReadings[s]);
     const remainingSubjects = subjects.filter(s => !completedSubjects.includes(s));
     const progress = document.getElementById('todayProgress').textContent;
-    
+
     let totalStudyTimeToday = 0;
     let subjectTimesToday = [];
     subjects.forEach(subject => {
@@ -187,7 +187,7 @@ async function callGroqAPI(userMessage, systemContext) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
+            model: "meta-llama/llama-4-scout-17b-16e-instruct",
             messages: messages,
             temperature: 0.7,
             max_tokens: 800
@@ -789,20 +789,187 @@ function renderSubjects() {
     }
 }
 
-function toggleReading(subject) {
+// ==================== STUDY TIME CHECK FEATURE ====================
+
+function toggleReading(subject, forceComplete = false) {
     const dateKey = getDateKey();
     if (!readingHistory[dateKey]) {
         readingHistory[dateKey] = {};
     }
-    readingHistory[dateKey][subject] = !readingHistory[dateKey][subject];
+
+    // If already checked, just uncheck it (no modal needed)
+    if (readingHistory[dateKey][subject] && !forceComplete) {
+        readingHistory[dateKey][subject] = false;
+        saveData();
+        renderSubjects();
+        updateStats();
+        updateProgressBar();
+        return;
+    }
+
+    // If checking (marking as complete) AND not forced, show modal
+    if (!readingHistory[dateKey][subject] && !forceComplete) {
+        // Check if there is already a timer with sufficient time
+        const timerData = studyTimers[subject];
+        const todayTime = getTodayStudyTime(subject);
+        const todayMinutes = Math.floor(todayTime / 60);
+
+        if (todayMinutes >= 60) {
+            // Already has enough time, auto complete
+            completeSubjectInteraction(subject);
+        } else {
+            // Ask for manual time input
+            showStudyTimeCheckModal(subject);
+        }
+        // Don't toggle yet
+        // Re-render to keep checkbox unchecked until confirmed
+        setTimeout(renderSubjects, 50);
+        return;
+    }
+
+    // If forced (from modal) or just completing
+    readingHistory[dateKey][subject] = true;
     saveData();
     renderSubjects();
     updateStats();
     updateProgressBar();
     generateAIAnalysis();
-    if (readingHistory[dateKey][subject]) {
-        celebrateReading();
-        showNotification(`✅ رائع! أتممت ${subject}`, 'success');
+    celebrateReading();
+    showNotification(`✅ رائع! أتممت ${subject}`, 'success');
+}
+
+function completeSubjectInteraction(subject) {
+    toggleReading(subject, true);
+}
+
+function showStudyTimeCheckModal(subject) {
+    // Remove existing if any
+    const existing = document.getElementById('studyTimeModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'study-check-modal';
+    modal.id = 'studyTimeModal';
+    modal.innerHTML = `
+        <div class="study-check-overlay" onclick="closeStudyTimeModal()"></div>
+        <div class="study-check-content">
+            <div class="study-check-icon">⏳</div>
+            <h2>التحقق من وقت المذاكرة</h2>
+            <p>كم دقيقة ذاكرت في مادة <strong>${subject}</strong> اليوم؟</p>
+            
+            <div class="time-input-container">
+                <input type="number" id="manualStudyTime" class="time-input" placeholder="00" min="0">
+                <span style="align-self: center; font-size: 1.2em;">دقيقة</span>
+            </div>
+
+            <div id="aiTimeAnalysis" class="study-check-ai-response"></div>
+
+            <div class="study-check-actions">
+                <button class="btn-verify-time" onclick="verifyStudyTime('${subject}')">
+                    تأكيد وإتمام المهمة
+                </button>
+                <button class="btn-cancel-check" onclick="closeStudyTimeModal()">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    setTimeout(() => document.getElementById('manualStudyTime').focus(), 100);
+}
+
+function closeStudyTimeModal() {
+    const modal = document.getElementById('studyTimeModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
+
+async function verifyStudyTime(subject) {
+    const input = document.getElementById('manualStudyTime');
+    const minutes = parseInt(input.value);
+    const aiBox = document.getElementById('aiTimeAnalysis');
+
+    if (!minutes || minutes < 0) {
+        alert('الرجاء إدخال وقت صحيح');
+        return;
+    }
+
+    // Get existing time from timer
+    const currentTimerTime = Math.floor(getTodayStudyTime(subject) / 60);
+    const totalTime = currentTimerTime + minutes;
+
+    if (totalTime >= 60) {
+        // Add the manual time to the timer records so it's saved
+        addManualStudyTime(subject, minutes);
+        closeStudyTimeModal();
+        completeSubjectInteraction(subject);
+    } else {
+        // Not enough time - Show AI Analysis
+        const btn = document.querySelector('.btn-verify-time');
+        btn.disabled = true;
+        btn.textContent = 'جاري التحليل...';
+        aiBox.style.display = 'block';
+        aiBox.innerHTML = '🤖 جاري استشارة الذكاء الاصطناعي...';
+
+        try {
+            const analysis = await analyzeInsufficientTime(subject, totalTime);
+            aiBox.innerHTML = `
+                <strong>🤖 تنبيه من الذكاء الاصطناعي:</strong><br><br>
+                ${analysis}
+                <br><br>
+                <em>لا يمكنك إتمام المهمة حتى تكمل ساعة على الأقل.</em>
+            `;
+        } catch (e) {
+            aiBox.innerHTML = 'وصلت لأقل من ساعة. حاول أن تذاكر أكثر!';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'حاول مرة أخرى لاحقاً';
+            // Change button action to close
+            btn.onclick = closeStudyTimeModal;
+        }
+    }
+}
+
+function addManualStudyTime(subject, minutes) {
+    const dateKey = getDateKey();
+    if (!studyTimers[subject]) {
+        studyTimers[subject] = { totalTime: 0, sessions: [] };
+    }
+    const durationSec = minutes * 60;
+
+    studyTimers[subject].totalTime += durationSec;
+    studyTimers[subject].sessions.push({
+        date: dateKey,
+        duration: durationSec,
+        timestamp: Date.now(),
+        manual: true
+    });
+    saveData();
+    updateStats(); // Update UI stats immediately
+}
+
+async function analyzeInsufficientTime(subject, timeStudied) {
+    const prompt = `
+    أنت مدرب دراسي صارم لكن مشجع. 
+    الطالب يريد تحديد مادة "${subject}" كمكتملة، لكنه ذاكر فقط ${timeStudied} دقيقة.
+    المطلوب 60 دقيقة على الأقل.
+    
+    اكتب رسالة قصيرة (30 كلمة) تشرح له لماذا هذا غير كافٍ وتقنعه بالعودة للمذاكرة لإكمال الساعة.
+    استخدم أسلوب علمي مبسط.
+    `;
+
+    try {
+        // Re-using the existing callGroqAPI function pattern from app.js
+        // We need to match the signature or use the implementation directly.
+        // Checking existing callGroqAPI signature in app.js...
+        // It takes (userMessage, systemContext).
+
+        return await callGroqAPI(prompt, "أنت مساعد تعليمي.");
+    } catch (e) {
+        return `مذاكرة ${timeStudied} دقيقة غير كافية لاستيعاب ${subject}. العقل يحتاج لساعة كاملة للتركيز العميق. أكمل الدقائق المتبقية!`;
     }
 }
 
@@ -1292,14 +1459,15 @@ function generateWeeklyChart() {
         };
     });
     const chartEl = document.getElementById('weeklyChart');
-    const maxPercentage = Math.max(...chartData.map(d => d.percentage), 1);
+    // REMOVED: const maxPercentage = Math.max(...chartData.map(d => d.percentage), 1);
+    // We now use absolute percentage (0-100) for bar height
 
     chartEl.innerHTML = `
         <div class="chart-title">📈 التقدم اليومي</div>
         <div class="chart-bars">
             ${chartData.map((data, index) => `
                 <div class="chart-bar-wrapper" style="animation-delay: ${index * 0.1}s;">
-                    <div class="chart-bar" style="height: ${(data.percentage / maxPercentage) * 100}%;">
+                    <div class="chart-bar" style="height: ${data.percentage}%;">
                         <span class="chart-value">${data.percentage}%</span>
                     </div>
                     <div class="chart-label">${data.day}</div>
@@ -1774,5 +1942,3 @@ async function logActivity(action, details) {
     if (!currentStudent) return;
     await logActivityToDatabase(currentStudent, action, details);
 }
-
-
