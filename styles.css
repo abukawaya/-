@@ -49,6 +49,25 @@
     /* توهج باللون الأزرق */
 }
 
+:root {
+    /* الألوان القديمة البنفسجية - استبدلها */
+    --primary: #1e3a8a;
+    /* بدلاً من #8b5cf6 */
+    --secondary: #3b82f6;
+    /* بدلاً من #6366f1 */
+    --accent: #60a5fa;
+    /* بدلاً من #06b6d4 */
+    --primary-light: #93c5fd;
+    --primary-dark: #1e40af;
+
+    /* التدرجات الجديدة */
+    --gradient-1: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    --gradient-2: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    --gradient-3: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%);
+    --gradient-4: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    --gradient-bg: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -9143,4 +9162,415 @@ timer-presets {
 .loader-spinner {
     width: 72px;
     height: 72px;
+}
+
+/* === تحسينات عامة للهواتف === */
+@media (max-width: 480px) {
+
+    /* Weekly Stats Grid */
+    .weekly-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .stat-box {
+        padding: 1rem;
+    }
+
+    .stat-box .stat-value {
+        font-size: 2rem;
+    }
+
+    /* Modal Improvements */
+    .weekly-modal {
+        border-radius: 20px 20px 0 0;
+        max-height: 95vh;
+        padding: 1.5rem;
+    }
+
+    .modal-header h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Subject Items */
+    .subject-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .subject-actions {
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+    }
+
+    .timer-btn {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+}
+
+/* للشاشات الصغيرة جداً */
+@media (max-width: 360px) {
+    .chat-toggle-btn {
+        width: 52px;
+        height: 52px;
+        font-size: 1.4rem;
+    }
+
+    .stat-box .stat-value {
+        font-size: 1.6rem;
+    }
+
+    .chart-title {
+        font-size: 1rem;
+    }
+}
+
+/* === تحسينات Chat Widget للهواتف === */
+@media (max-width: 480px) {
+
+    /* Chat Widget - ملء الشاشة بالكامل */
+    .chat-widget {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
+
+    .chat-toggle-btn {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        left: auto;
+        width: 56px;
+        height: 56px;
+        font-size: 1.6rem;
+        z-index: 10002;
+    }
+
+    .chat-window {
+        position: fixed !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        top: 0 !important;
+        border-radius: 0 !important;
+        max-width: 100vw;
+        max-height: 100vh;
+        border: none;
+    }
+
+    .chat-header {
+        border-radius: 0;
+        padding: 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: linear-gradient(135deg,
+                rgba(30, 58, 138, 0.95) 0%,
+                rgba(59, 130, 246, 0.9) 100%);
+    }
+
+    .chat-messages {
+        padding: 1rem;
+        gap: 0.75rem;
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2rem;
+    }
+
+    .chat-input-area {
+        padding: 1rem;
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(180deg,
+                rgba(30, 58, 138, 0.98) 0%,
+                rgba(23, 37, 84, 0.98) 100%);
+    }
+
+    .message {
+        max-width: 85%;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+
+    #chatInput {
+        padding: 12px 18px;
+        font-size: 1rem;
+    }
+
+    #chatSendBtn {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+    }
+}
+
+/* === تحسين Weekly Chart للهواتف === */
+@media (max-width: 480px) {
+    .weekly-chart {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .chart-title {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .chart-bars {
+        height: 180px;
+        min-width: 100%;
+        gap: 8px;
+        padding: 0 0.5rem;
+    }
+
+    .chart-bar-wrapper {
+        min-width: 45px;
+        flex: 0 0 auto;
+    }
+
+    .chart-bar {
+        width: 100%;
+        max-width: 45px;
+        min-width: 35px;
+    }
+
+    .chart-label {
+        font-size: 0.75rem;
+        writing-mode: horizontal-tb;
+        white-space: nowrap;
+    }
+
+    .chart-value {
+        font-size: 0.75rem;
+        padding: 3px 6px;
+        top: -25px;
+    }
+
+    /* السماح بالتمرير الأفقي إذا لزم الأمر */
+    .weekly-chart::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .weekly-chart::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+    }
+
+    .weekly-chart::-webkit-scrollbar-thumb {
+        background: rgba(30, 58, 138, 0.5);
+        border-radius: 2px;
+    }
+}
+
+/* للشاشات الصغيرة جداً */
+@media (max-width: 360px) {
+    .chart-bars {
+        height: 150px;
+        gap: 6px;
+    }
+
+    .chart-bar {
+        max-width: 35px;
+        min-width: 28px;
+    }
+
+    .chart-label {
+        font-size: 0.7rem;
+    }
+}
+
+/* === تغيير نظام الألوان من البنفسجي إلى الأزرق === */
+
+
+/* تحديث Chat Header */
+.chat-header {
+    background: linear-gradient(135deg,
+            rgba(30, 58, 138, 0.45) 0%,
+            rgba(59, 130, 246, 0.4) 35%,
+            rgba(96, 165, 250, 0.35) 70%,
+            rgba(147, 197, 253, 0.3) 100%);
+}
+
+/* تحديث الأزرار */
+.chat-toggle-btn {
+    background: linear-gradient(135deg,
+            #1e3a8a 0%,
+            #3b82f6 50%,
+            #60a5fa 100%);
+}
+
+#chatSendBtn {
+    background: linear-gradient(135deg,
+            #1e3a8a,
+            #3b82f6,
+            #60a5fa);
+}
+
+/* تحديث Progress Bar */
+.progress-fill {
+    background: linear-gradient(90deg,
+            #1e3a8a 0%,
+            #3b82f6 30%,
+            #60a5fa 70%,
+            #10b981 100%);
+}
+
+/* تحديث Typing Indicator */
+.typing-indicator .dot {
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    box-shadow: 0 0 15px rgba(30, 58, 138, 0.6);
+}
+
+/* تحديث الرسائل */
+.user-message {
+    background: linear-gradient(135deg,
+            #1e3a8a 0%,
+            #3b82f6 40%,
+            rgba(59, 130, 246, 0.9) 60%,
+            #60a5fa 100%);
+}
+
+/* === تصميم Logo محسّن بدون النجمة === */
+.logo-wrapper {
+    position: relative;
+    width: clamp(60px, 12vw, 80px);
+    height: clamp(60px, 12vw, 80px);
+    flex-shrink: 0;
+}
+
+.logo-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,
+            #1e3a8a,
+            #3b82f6,
+            #60a5fa,
+            #1e3a8a);
+    background-size: 300% 300%;
+    opacity: 0.6;
+    animation: rotateBorder 6s linear infinite;
+    z-index: 0;
+    filter: blur(12px);
+}
+
+/* حلقة دائرية متحركة */
+.logo-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: #3b82f6;
+    border-right-color: #60a5fa;
+    animation: rotate 3s linear infinite;
+    z-index: 0;
+}
+
+.app-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 4px 20px rgba(30, 58, 138, 0.8));
+    transition: all 0.3s ease;
+}
+
+.app-logo:hover {
+    transform: scale(1.08) rotate(5deg);
+    filter: drop-shadow(0 8px 30px rgba(59, 130, 246, 0.9));
+}
+
+/* Logo Glow Effect */
+.logo-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 130%;
+    height: 130%;
+    background: radial-gradient(circle,
+            rgba(30, 58, 138, 0.5) 0%,
+            rgba(59, 130, 246, 0.4) 50%,
+            transparent 70%);
+    border-radius: 50%;
+    z-index: 1;
+    animation: glowPulse 3s ease-in-out infinite;
+    filter: blur(20px);
+}
+
+@keyframes glowPulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+    }
+}
+
+@keyframes rotateBorder {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* إضافة تأثير ضوئي جانبي */
+.title-container::before,
+.title-container::after {
+    display: none;
+    /* إخفاء الخطوط الجانبية على الهاتف */
+}
+
+@media (min-width: 768px) {
+
+    .title-container::before,
+    .title-container::after {
+        display: block;
+        content: '';
+        position: absolute;
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(90deg,
+                transparent,
+                rgba(30, 58, 138, 0.6),
+                rgba(59, 130, 246, 0.6),
+                transparent);
+        top: 50%;
+        animation: decorativeLine 3s ease-in-out infinite;
+    }
+
+    .title-container::before {
+        right: -100px;
+    }
+
+    .title-container::after {
+        left: -100px;
+    }
 }
