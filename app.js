@@ -1,5 +1,5 @@
 // ==================== AI CHATBOT INTEGRATION ==================== 
-const GROQ_API_KEY = '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';
+const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_TTS_URL = 'https://api.groq.com/openai/v1/audio/speech';
 
